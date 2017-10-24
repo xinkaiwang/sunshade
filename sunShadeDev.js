@@ -4,11 +4,11 @@ var promisify = require('bluebird').promisify;
 
 var qd = require('perf-gpio').quadrature_decoder;
 // https://pinout.xyz/pinout/wiringpi#
-var qdCounter = qd(0,1);
+var qdCounter = qd(1,0);
 
 var motor = require('perf-gpio').motor();
 
-var m = motor(25, 23);
+var m = motor(23, 25);
 
 function cleanup() {
     m(0);
@@ -52,6 +52,8 @@ var currentQdPos = startQdPos;
 var initComplete = false;
 var startStorePos = 0;
 var currentStorePos = 0;
+var topLimit = 0;
+var buttomLimit = 0;
 
 var store = require('./mysqlStore');
 
@@ -66,6 +68,25 @@ function setMotor(val) {
 }
 function getMotor() {
     return motorValue;
+}
+function setTopLimit(val) {
+    console.log('setTopLimit=' + val);
+    topLimit = val;
+    return promisify(store.set)({topLimit: val});
+}
+
+function getTopLimit() {
+    return topLimit;
+}
+
+function setButtomLimit(val) {
+    console.log('setButtomLimit=' + val);
+    buttomLimit = val;
+    return promisify(store.set)({buttomLimit: val});
+}
+
+function getButtomLimit() {
+    return buttomLimit;
 }
 
 function onTimeout() {
@@ -111,13 +132,19 @@ function init(cbInit) {
       }).then(function(status) {
         startStorePos = status.currentPos;
         currentStorePos = startStorePos;
+        topLimit = status.topLimit? status.topLimit : 0;
+        buttomLimit = status.buttomLimit ? status.buttomLimit : 0;
         console.log(JSON.stringify(status));
         initComplete = true;
       }).then(function() {
         cbInit(null, {
             getCurrentPos: getCurrentPos,
             setMotor: setMotor,
-            getMotor: getMotor
+            getMotor: getMotor,
+            setTopLimit: setTopLimit,
+            getTopLimit: getTopLimit,
+            setButtomLimit: setButtomLimit,
+            getButtomLimit: getButtomLimit
         });
       }).error(function(err) {
         cbInit(err);

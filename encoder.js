@@ -5,8 +5,8 @@ var _ = require('underscore');
 var valueTypes = {
     testAttr: 'int',
     currentPos: 'int',
-    topPos: 'int',
-    buttonPos: 'int',
+    topLimit: 'int',
+    buttomLimit: 'int',
 }
 
 function encode(input) {
