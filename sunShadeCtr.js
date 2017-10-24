@@ -2,13 +2,14 @@
 
 var promisify = require('bluebird').promisify;
 var button = require('perf-gpio').button;
+var config = require('./config');
 
 function init(initCb) {
     var sunShadeDev = null;
 
-    var forwardButton = button(3, 'PUD_UP');
-    var midButton = button(22, 'PUD_UP');
-    var backwardButton = button(26, 'PUD_UP');
+    var forwardButton = button(config.forwardButton, 'PUD_UP');
+    var midButton = button(config.midButton, 'PUD_UP');
+    var backwardButton = button(config.backwardButton, 'PUD_UP');
 
     var modeEnum = {
         NUTRUAL: 0,
@@ -151,4 +152,4 @@ function init(initCb) {
 
 }
 
-module.exports = promisify(init);
+module.exports = init;

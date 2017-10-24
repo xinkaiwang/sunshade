@@ -1,14 +1,15 @@
 'use strict'
 
 var promisify = require('bluebird').promisify;
+var config = require('./config');
 
 var qd = require('perf-gpio').quadrature_decoder;
 // https://pinout.xyz/pinout/wiringpi#
-var qdCounter = qd(1,0);
+var qdCounter = qd(config.qdPinA, config.qdPinB);
 
 var motor = require('perf-gpio').motor();
 
-var m = motor(23, 25);
+var m = motor(config.motorPinA, config.motorPinB);
 
 function cleanup() {
     m(0);
