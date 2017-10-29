@@ -3,6 +3,14 @@
 var promisify = require('bluebird').promisify;
 var button = require('perf-gpio').button;
 var config = require('./config');
+var button = require('perf-gpio').button;
+var onoff  = require('perf-gpio').onoff;
+
+var upLed = onoff(config.upLed).set;
+var downLed = onoff(config.downLed).set;
+
+upLed(1);
+downLed(1);
 
 function init(initCb) {
     var sunShadeDev = null;
@@ -21,16 +29,21 @@ function init(initCb) {
     };
 
     var currentMode = modeEnum.NUTRUAL;
+    function setMotor(val) {
+        upLed(val>0 ? 1 : 0);
+        downLed(val<0 ? 1 : 0);
+        sunShadeDev.setMotor(val);
+    }
 
     function fastForward() {
         console.log('FAST_FORWARD');
-        sunShadeDev.setMotor(1);
+        setMotor(1);
         currentMode = modeEnum.FAST_FORWARD;
     }
 
     function fastBackward() {
         console.log('FAST_BACKWARD');
-        sunShadeDev.setMotor(-1);
+        setMotor(-1);
         currentMode = modeEnum.FAST_BACKWARD;
     }
 
@@ -44,14 +57,14 @@ function init(initCb) {
                 if (elapsedSinceLastClick > 100 && elapsedSinceLastClick < 500) {
                     fastForward();
                 } else {
-                    sunShadeDev.setMotor(1);
+                    setMotor(1);
                     lastForwardTimeMs = now;
                     currentMode = modeEnum.FORWARD;
                 }
             }
         } else if (currentMode == modeEnum.FORWARD) {
             if (buttonStatus) { // button released
-                sunShadeDev.setMotor(0);
+                setMotor(0);
                 currentMode = modeEnum.NUTRUAL;
             }
         } else if (currentMode == modeEnum.SETLIMIT) {
@@ -61,7 +74,7 @@ function init(initCb) {
             }
         } else if (currentMode == modeEnum.FAST_BACKWARD) {
             if (!buttonStatus) { // button pressed
-                sunShadeDev.setMotor(0);
+                setMotor(0);
                 currentMode = modeEnum.NUTRUAL;
             }
         }
@@ -77,14 +90,14 @@ function init(initCb) {
                 if (elapsedSinceLastClick > 100 && elapsedSinceLastClick < 500) {
                     fastBackward();
                 } else {
-                    sunShadeDev.setMotor(-1);
+                    setMotor(-1);
                     lastBackwardTimeMs = now;
                     currentMode = modeEnum.BACKWARD;
                 }
             }
         } else if (currentMode == modeEnum.BACKWARD) {
             if (buttonStatus) { // button released
-                sunShadeDev.setMotor(0);
+                setMotor(0);
                 currentMode = modeEnum.NUTRUAL;
             }
         } else if (currentMode == modeEnum.SETLIMIT) {
@@ -94,7 +107,7 @@ function init(initCb) {
             }
         }  else if (currentMode == modeEnum.FAST_FORWARD) {
             if (!buttonStatus) { // button pressed
-                sunShadeDev.setMotor(0);
+                setMotor(0);
                 currentMode = modeEnum.NUTRUAL;
             }
         }
@@ -122,12 +135,12 @@ function init(initCb) {
             currentPos = newPos;
             if (currentMode == modeEnum.FAST_FORWARD) {
                 if (newPos >= sunShadeDev.getTopLimit()) {
-                    sunShadeDev.setMotor(0);
+                    setMotor(0);
                     currentMode = modeEnum.NUTRUAL;
                 }
             } else if (currentMode == modeEnum.FAST_BACKWARD) {
                 if (newPos <= sunShadeDev.getButtomLimit()) {
-                    sunShadeDev.setMotor(0);
+                    setMotor(0);
                     currentMode = modeEnum.NUTRUAL;
                 }
             }
@@ -144,9 +157,13 @@ function init(initCb) {
             ff: fastForward,
             fb: fastBackward
         };
+        upLed(0);
+        downLed(0);
         initCb(null, ret);
     }).error(function(err) {
         console.log(err);
+        upLed(0);
+        downLed(0);
         initCb(err);
     });
 
