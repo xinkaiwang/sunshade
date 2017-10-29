@@ -6,6 +6,7 @@ var config = {
     backwardButton: 23,
     motorPinA: 2,
     motorPinB: 3,
+    motorEnable: 4,
     qdPinA: 28,
     qdPinB: 29,
     upLed: 6,

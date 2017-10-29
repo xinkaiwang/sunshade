@@ -8,11 +8,14 @@ var qd = require('perf-gpio').quadrature_decoder;
 var qdCounter = qd(config.qdPinA, config.qdPinB);
 
 var motor = require('perf-gpio').motor();
+var onoff  = require('perf-gpio').onoff;
 
 var m = motor(config.motorPinA, config.motorPinB);
+var motorEnable = onoff(config.motorEnable).set;
 
 function cleanup() {
     m(0);
+    motorEnable(0); // make sure shutdown motor before we quit
     motor.shutdown();
 }
 function exitHandler(options, err) {
@@ -138,6 +141,9 @@ function init(cbInit) {
         console.log(JSON.stringify(status));
         initComplete = true;
       }).then(function() {
+        // Make sure the motor is not enabled before all init is done (all motor control pin are set to output mode).
+        // other wise the motor output can be flicky
+        motorEnable(1);
         cbInit(null, {
             getCurrentPos: getCurrentPos,
             setMotor: setMotor,

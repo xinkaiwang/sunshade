@@ -1,6 +1,6 @@
 {
   "name": "sunshade",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "xinkai's AI-enabled sun shade project, based on raspberry pi z w, nodejs",
   "main": "index.js",
   "scripts": {

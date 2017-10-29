@@ -151,14 +151,20 @@ function init(initCb) {
     .then(function(dev) {
         sunShadeDev = dev;
     }).then(function() {
-        // sunShadeDev.setMotor(-1);
+        setMotor(0.5);
+    }).delay(100).then(function() {
+        setMotor(0);
+    }).delay(200).then(function() {
+        setMotor(-0.5);
+    }).delay(100).then(function() {
+        setMotor(0);
+        upLed(0);
+        downLed(0);
         setInterval(timeout, 100);
         var ret = {
             ff: fastForward,
             fb: fastBackward
         };
-        upLed(0);
-        downLed(0);
         initCb(null, ret);
     }).error(function(err) {
         console.log(err);
