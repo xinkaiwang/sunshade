@@ -11,7 +11,7 @@ require('./sunShadeCtr')(function (err, ss) {
 
 var wemore = require('wemore');
 var ip = require('./localIpAddr');
-var weMoName = 'Gate' + _.last(ip.split('.'));
+var weMoName = 'SunShade' + _.last(ip.split('.'));
 var weMoPort = 9002;
 require('getmac').getMac(function(err, macAddress) {
     if (err)  throw err;
