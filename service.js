@@ -7,8 +7,9 @@ var app = express();
 var wemore = require('wemore');
 var ip = require('./localIpAddr');
 var weMoId = 'SunShade' + _.last(ip.split('.'));
-var we = wemore.Emulate({friendlyName: weMoId}); // automatically assigned port
-console.log('weMo started, friendlyName='+weMoId);
+var weMoPort = 9002;
+var we = wemore.Emulate({friendlyName: weMoId, port: weMoPort});
+console.log('weMo started, friendlyName='+weMoId+' port=' + weMoPort);
 
 var sunShadeCtr = null;
 require('./sunShadeCtr')(function (err, ss) {
