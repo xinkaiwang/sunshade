@@ -1,10 +1,14 @@
 'use strict'
 
+var _ = require('underscore');
 var express = require('express');
 var app = express();
 
 var wemore = require('wemore');
-var we = wemore.Emulate({friendlyName: "SunShade"}); // automatically assigned port
+var ip = require('./localIpAddr');
+var weMoId = 'SunShade' + _.last(ip.split('.'));
+var we = wemore.Emulate({friendlyName: weMoId}); // automatically assigned port
+console.log('weMo started, friendlyName='+weMoId);
 
 var sunShadeCtr = null;
 require('./sunShadeCtr')(function (err, ss) {
@@ -13,7 +17,7 @@ require('./sunShadeCtr')(function (err, ss) {
 
 // curl http://localhost:8080/switch1/on
 app.get('/switch1/on', function (req, rsp) {
-    console.log('on');
+    console.log('http::on');
     if (sunShadeCtr) {
         sunShadeCtr.ff();
     }
@@ -22,7 +26,7 @@ app.get('/switch1/on', function (req, rsp) {
 
 // curl http://localhost:8080/switch1/off
 app.get('/switch1/off', function (req, rsp) {
-    console.log('off');
+    console.log('http::off');
     if (sunShadeCtr) {
         sunShadeCtr.fb();
     }
@@ -40,15 +44,15 @@ we.on('listening', function() {
 
 // also, 'on' and 'off' events corresponding to binary state
 we.on('on', function() {
+    console.log("wemore::on");
     if (sunShadeCtr) {
         sunShadeCtr.ff();
     }
-    console.log("SunShade turned on");
 });
 
 we.on('off', function() {
+    console.log("wemore::off");
     if (sunShadeCtr) {
         sunShadeCtr.fb();
     }
-    console.log("SunShade turned off");
 });
