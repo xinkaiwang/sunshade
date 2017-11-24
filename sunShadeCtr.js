@@ -37,14 +37,29 @@ function init(initCb) {
 
     function fastForward() {
         console.log('FAST_FORWARD');
-        setMotor(1);
-        currentMode = modeEnum.FAST_FORWARD;
+        var pos = sunShadeDev.getCurrentPos();
+        if (pos < sunShadeDev.getTopLimit()) {
+            setMotor(1);
+            currentMode = modeEnum.FAST_FORWARD;
+        }
     }
 
     function fastBackward() {
         console.log('FAST_BACKWARD');
-        setMotor(-1);
-        currentMode = modeEnum.FAST_BACKWARD;
+        var pos = sunShadeDev.getCurrentPos();
+        if (pos > sunShadeDev.getButtomLimit()) {
+            setMotor(-1);
+            currentMode = modeEnum.FAST_BACKWARD;
+        }
+    }
+
+    function getBinaryState() {
+        var top = sunShadeDev.getTopLimit();
+        var buttom = sunShadeDev.getButtomLimit();
+        var middle = (top + buttom)/2;
+        var binState = sunShadeDev.getCurrentPos() > middle;
+        console.log('getBinaryState() binState=' + binState);
+        return binState;
     }
 
     var lastForwardTimeMs = 0;
@@ -163,7 +178,8 @@ function init(initCb) {
         setInterval(timeout, 100);
         var ret = {
             ff: fastForward,
-            fb: fastBackward
+            fb: fastBackward,
+            getBinaryState: getBinaryState
         };
         initCb(null, ret);
     }).error(function(err) {
