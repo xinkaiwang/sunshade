@@ -58,6 +58,7 @@ var startStorePos = 0;
 var currentStorePos = 0;
 var topLimit = 0;
 var buttomLimit = 0;
+var shadeProfileId = 0;
 
 var store = require('./mysqlStore');
 
@@ -91,6 +92,16 @@ function setButtomLimit(val) {
 
 function getButtomLimit() {
     return buttomLimit;
+}
+
+function setShadeProfileId(val) {
+    console.log('setShadeProfileId=' + val);
+    topLimit = val;
+    return promisify(store.set)({profileId: val});
+}
+
+function getShadeProfileId() {
+    return shadeProfileId;
 }
 
 function onTimeout() {
@@ -138,6 +149,7 @@ function init(cbInit) {
         currentStorePos = startStorePos;
         topLimit = status.topLimit? status.topLimit : 0;
         buttomLimit = status.buttomLimit ? status.buttomLimit : 0;
+        shadeProfileId = status.profileId | 0;
         console.log(JSON.stringify(status));
         initComplete = true;
       }).then(function() {
@@ -151,7 +163,9 @@ function init(cbInit) {
             setTopLimit: setTopLimit,
             getTopLimit: getTopLimit,
             setButtomLimit: setButtomLimit,
-            getButtomLimit: getButtomLimit
+            getButtomLimit: getButtomLimit,
+            setShadeProfileId: setShadeProfileId,
+            getShadeProfileId: getShadeProfileId
         });
       }).error(function(err) {
         cbInit(err);

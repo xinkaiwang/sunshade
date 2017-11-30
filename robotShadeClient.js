@@ -53,9 +53,11 @@ function reportAction(opt, cb) {
     var params = {
         session: opt.sessionId,
         action: opt.action,
-        src: opt.source,
-        temp: opt.temperature
+        src: opt.source
     };
+    if ('temperature' in opt) { // this is to handle corner case when temperature not exist, or temperature=0.0 degree
+        params.temp = opt.temperature;
+    }
     var str = _.reduce(params, function(memo, v, k) {memo.push(k + '=' + v); return memo;}, []).join('&');
     var url = baseUrl + 'reportAction?' + str;
     console.log(url);

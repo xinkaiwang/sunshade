@@ -7,6 +7,7 @@ var valueTypes = {
     currentPos: 'int',
     topLimit: 'int',
     buttomLimit: 'int',
+    profileId: 'int',
 }
 
 function encode(input) {

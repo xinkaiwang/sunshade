@@ -179,7 +179,9 @@ function init(initCb) {
         var ret = {
             ff: fastForward,
             fb: fastBackward,
-            getBinaryState: getBinaryState
+            getBinaryState: getBinaryState,
+            setShadeProfileId: sunShadeDev.setShadeProfileId,
+            getShadeProfileId: sunShadeDev.getShadeProfileId
         };
         initCb(null, ret);
     }).error(function(err) {

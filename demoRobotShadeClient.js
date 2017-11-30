@@ -21,8 +21,7 @@ var client = require('./robotShadeClient');
 var opt = {
     sessionId: 20,
     action: 'on',
-    source: 'wemo',
-    temperature: 20.4
+    source: 'wemo'
 };
 client.reportAction(opt, function(err, result) {
     if (err) {
