@@ -80,6 +80,7 @@ require('./sunShadeCtr')(function (err, ss) {
         readThermo()
             .then(function(result) {
                 // result = { id: '28-0516a72226ff', temperature: 26.4 }
+                temperature = result.temperature;
                 console.log('boardId=' + result.id);
                 boardId = result.id;
                 shadeProfileId = sunShadeCtr.getShadeProfileId();
