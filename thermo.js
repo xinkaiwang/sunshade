@@ -23,7 +23,9 @@ function read(cb) {
         // console.log('ids=' + JSON.stringify(ids));
         var id = findGoodId(ids);
         if (id) {
-            ds18b20.temperature(id, cb);
+            ds18b20.temperature(id, function(err, val) {
+                cb(null, { id: id, temperature: val});
+            });
         } else {
             cb('no sensors found');
         }
