@@ -84,7 +84,45 @@ function reportAction(opt, cb) {
     });
 }
 
+// var opt = {
+//     sessionId: sessionId,
+//     now: (new Date()).toISOString(),
+//     temperature: temperature
+// };
+function heartbeat(opt, cb) {
+    var params = {
+        session: opt.sessionId,
+        now: opt.now,
+        temp: opt.temperature
+    };
+    var str = _.reduce(params, function(memo, v, k) {memo.push(k + '=' + v); return memo;}, []).join('&');
+    var url = baseUrl + 'heartbeat?' + str;
+    console.log(url);
+    request(url, function(err, response, body) {
+        // console.log('response = ' + body);
+        if (err) {
+            cb(err);
+        } else {
+            // console.log('response = ' + JSON.stringify(response));
+            if (response.statusCode >= 200 && response.statusCode < 300) {
+                var err = null;
+                var json = null;
+                try {
+                    json = JSON.parse(body);
+                } catch (ex) {
+                    console.error('unable to parse response as json: ' + ex);
+                    err = new Error('FailToParseResponseBody');
+                }
+                cb(err, json);
+            } else {
+                cb(new Error('ResponseCode' + response.statusCode));
+            }
+        }
+    });
+}
+
 module.exports = {
     registerSession: registerSession,
-    reportAction: reportAction
+    reportAction: reportAction,
+    heartbeat: heartbeat
 };

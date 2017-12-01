@@ -9,6 +9,9 @@ var promisify = require('bluebird').promisify;
 var readThermo = promisify(require('./thermo').read);
 var registerSession = promisify(require('./robotShadeClient').registerSession);
 var reportAction = promisify(require('./robotShadeClient').reportAction);
+var heartbeat = promisify(require('./robotShadeClient').heartbeat);
+
+var heartbeatDelay = 10 * 60 * 1000; // 10 min
 
 var sunShadeCtr = null;
 var macAddr;
@@ -32,6 +35,46 @@ function reportActionToServer(action, source) {
             console.error('reportAction() fail err=' + err);
         })
     }
+}
+
+function doHeartbeat() {
+    readThermo()
+    .then(function(result) {
+        // result = { id: '28-0516a72226ff', temperature: 26.4 }
+        temperature = result.temperature;
+        var opt = {
+            sessionId: shadeSessionId,
+            now: (new Date()).toISOString(),
+            temperature: temperature
+        };
+        return heartbeat(opt);
+    })
+    .then(function(response) {
+        console.log('heartbeat() done, t=' + temperature + ' response=' + JSON.stringify(response));
+        if (response.cmd) {
+            console.log('cmd = ' + response.cmd)
+            if (response.cmd === 'on') {
+                console.log('hb::on');
+                if (sunShadeCtr) {
+                    sunShadeCtr.ff();
+                }
+            } else if (response.cmd === 'off') {
+                console.log('hb::off');
+                if (sunShadeCtr) {
+                    sunShadeCtr.fb();
+                }
+            }
+        }
+    })
+    .error(function(err) {
+        console.error(err);
+    });
+
+}
+
+function onTimeout() {
+    setTimeout(onTimeout, heartbeatDelay);
+    doHeartbeat();
 }
 
 var list = [promisify(require('./sunShadeCtr'))(), readThermo(), promisify(require('getmac').getMac)()];
@@ -105,6 +148,7 @@ Promise.all(list)
         }
         shadeSessionId = result.session;
         console.log('shadeSessionId=' + shadeSessionId);
+        onTimeout();
     })
     .error(function(err) {
         console.error('error happend when trying to registerSession: ' + err);
