@@ -4,6 +4,7 @@ var _ = require('underscore');
 var express = require('express');
 var app = express();
 
+var Promise = require('bluebird');
 var promisify = require('bluebird').promisify;
 var readThermo = promisify(require('./thermo').read);
 var registerSession = promisify(require('./robotShadeClient').registerSession);
@@ -33,19 +34,23 @@ function reportActionToServer(action, source) {
     }
 }
 
-require('./sunShadeCtr')(function (err, ss) {
-    sunShadeCtr = ss;
+var list = [promisify(require('./sunShadeCtr'))(), readThermo(), promisify(require('getmac').getMac)()];
+Promise.all(list)
+    .then(function(resultList) {
+        // resultList[0]: sunShadeCtr
+        sunShadeCtr = resultList[0];
 
-    var wemore = require('wemore');
-    var ip = require('./localIpAddr');
-    var weMoName = 'SunShade' + _.last(ip.split('.'));
-    var weMoPort = 9002;
-    var binaryState = sunShadeCtr.getBinaryState();
-    require('getmac').getMac(function(err, macAddress) {
-        if (err)  throw err;
-        console.log('macAddr=' + macAddress);
-        macAddr = macAddress;
-        var weMoId = macAddress.replace(/:/g,'');
+        var wemore = require('wemore');
+        var ip = require('./localIpAddr');
+        var weMoName = 'SunShade' + _.last(ip.split('.'));
+        var weMoPort = 9002;
+        var binaryState = sunShadeCtr.getBinaryState();
+
+
+        // resultList[2]: macAddr
+        console.log('macAddr=' + resultList[2]);
+        macAddr = resultList[2];
+        var weMoId = resultList[2].replace(/:/g,'');
         while (weMoId.length < 14) {
             weMoId = '0' + weMoId;
         }
@@ -75,41 +80,36 @@ require('./sunShadeCtr')(function (err, ss) {
             }
         });
 
-        // init robotShadeService Client
-        // we need shadeProfileId (read from MySQL) and boardId (read from temperature sensor on PCB board)
-        readThermo()
-            .then(function(result) {
-                // result = { id: '28-0516a72226ff', temperature: 26.4 }
-                temperature = result.temperature;
-                console.log('boardId=' + result.id);
-                boardId = result.id;
-                shadeProfileId = sunShadeCtr.getShadeProfileId();
-                console.log('profileId=' + shadeProfileId);
-                console.log('localIpAddr=' + localIpAddr);
-                var opt = {
-                    profileId: shadeProfileId,
-                    macAddr: macAddr,
-                    boardId: boardId,
-                    localIpAddr: localIpAddr
-                };
-                return registerSession(opt);
-            })
-            .then(function(result) {
-                // result = {"session":18,"profile":20001}
-                if (result.profile && shadeProfileId !== result.profile) {
-                    // profileId updated?!
-                    console.log('profileId old=' + shadeProfileId + ' new=' + result.profile);
-                    sunShadeCtr.setShadeProfileId(result.profile);
-                    shadeProfileId = result.profile;
-                }
-                shadeSessionId = result.session;
-                console.log('shadeSessionId=' + shadeSessionId);
-            })
-            .error(function(err) {
-                console.error('error happend when trying to registerSession: ' + err);
-            });
+        // resultList[1] = { id: '28-0516a72226ff', temperature: 26.4 }
+        temperature = resultList[1].temperature;
+        console.log('boardId=' + resultList[1].id);
+        boardId = resultList[1].id;
+        shadeProfileId = sunShadeCtr.getShadeProfileId();
+        console.log('profileId=' + shadeProfileId);
+        console.log('localIpAddr=' + localIpAddr);
+        var opt = {
+            profileId: shadeProfileId,
+            macAddr: macAddr,
+            boardId: boardId,
+            localIpAddr: localIpAddr
+        };
+        return registerSession(opt);
+    })
+    .then(function(result) {
+        // result = {"session":18,"profile":20001}
+        if (result.profile && shadeProfileId !== result.profile) {
+            // profileId updated?!
+            console.log('profileId old=' + shadeProfileId + ' new=' + result.profile);
+            sunShadeCtr.setShadeProfileId(result.profile);
+            shadeProfileId = result.profile;
+        }
+        shadeSessionId = result.session;
+        console.log('shadeSessionId=' + shadeSessionId);
+    })
+    .error(function(err) {
+        console.error('error happend when trying to registerSession: ' + err);
     });
-});
+
 
 // curl http://localhost:8080/switch1/on
 app.get('/switch1/on', function (req, rsp) {
