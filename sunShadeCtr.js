@@ -6,11 +6,16 @@ var config = require('./config');
 var button = require('perf-gpio').button;
 var onoff  = require('perf-gpio').onoff;
 
-var upLed = onoff(config.upLed).set;
-var downLed = onoff(config.downLed).set;
+var upLedObj = onoff(config.upLed);
+var downLedObj = onoff(config.downLed);
+
+var upLed = upLedObj.set;
+var downLed = downLedObj.set;
 
 upLed(1);
 downLed(1);
+
+process.on('cleanup', function() {upLedObj.release(); downLedObj.release();});
 
 function init(initCb) {
     var sunShadeDev = null;
