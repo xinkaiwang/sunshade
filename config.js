@@ -8,6 +8,7 @@ var config = {
     motorPinA: 2,
     motorPinB: 3,
     motorEnable: 4,
+    motorSensorRatio: 1,
     qdPinA: 28,
     qdPinB: 29,
     upLed: 6,

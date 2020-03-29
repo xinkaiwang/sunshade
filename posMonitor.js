@@ -4,7 +4,6 @@ var inputBank = require('perf-gpio').inputBank();
 var clockOut = require('perf-gpio').clockOut();
 var config = require('./config');
 
-
 function init() {
   
   var pinBank = inputBank(config.qdRegBank, 'PUD_DOWN');
@@ -29,6 +28,7 @@ function init() {
     value = readValueFromPinBank();
     return monitor;
   }
+  
   monitor.getValue = getValue;
   monitor.update = update;
   return monitor;
