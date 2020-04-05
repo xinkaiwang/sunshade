@@ -2,6 +2,8 @@
 
 var motorlib = require('perf-gpio').motor();
 var config = require('./config');
+var mysqlStore = require('./mysqlStore');
+var promisify = require('bluebird').promisify;
 
 var posMonitor = require('./posMonitor')();
 var motor = motorlib(config.motorPinA, config.motorPinB);
@@ -22,7 +24,36 @@ var targetSpeedRpm = 0.0; // this is always in RPM
 var currentSpeed = 0.0; // this is always in QD/tick
 var currentSpeedRpm = speedQdToRpm(currentSpeed);
 
-var pos = 20000;
+var pos = 2000;
+
+var synsIntervalMs = 1000;
+var storedPos = 0;
+function syncPosToMysql() {
+  var storeingPos = pos;
+  if (storeingPos != storedPos) {
+    promisify(mysqlStore.set)({currentPos: storeingPos}).then(function() {
+      console.log('syncPosToMysql(): pos='+ storeingPos);
+      storedPos = storeingPos;
+    }).finally(function() {
+      setTimeout(syncPosToMysql, synsIntervalMs);
+    });
+  } else {
+    setTimeout(syncPosToMysql, synsIntervalMs);
+  }
+}
+
+function loadStoredPosition() {
+  return promisify(mysqlStore.getAll)()
+  .then(function (data) {
+    pos = data.currentPos;
+    storedPos = pos;
+    // var v = posMonitor.getValue();
+    // console.log('loadStoredPosition(): v=' + v + ', pos=' + pos);
+    syncPosToMysql(); // start sync thread/loop
+    return pos;
+  });
+}
+
 
 var safetyCapPct = 100;
 function setPorweInternal(pct) {
@@ -51,7 +82,7 @@ function motorGetPower() {
 }
 
 function motorGetPosition() {
-  return pos;
+  return pos / motorSensorRatio;
 }
 
 // this will get called every other 10ms
@@ -60,7 +91,7 @@ var pid_lastError = targetSpeedRpm - currentSpeedRpm;
 var pid_i = 0;
 var pid_kp = -0.003;
 var pid_ki = -0.02;
-var pid_kd = -0.0005;
+var pid_kd = -0.0002;
 function toInt(f) {
   return Math.round(f);
 }
@@ -93,7 +124,6 @@ function tick(diff) {
 }
 
 var v = posMonitor.update().getValue();
-console.log('' + v + ', pos=' + pos);
 function timeout() {
   var newVal = posMonitor.update().getValue();
   var diff = 0;
@@ -106,7 +136,7 @@ function timeout() {
       diff -= 256;
     }
     pos += diff;
-    console.log(''+v + ', d='+diff + ', pos=' + pos);
+    // console.log(''+v + ', d='+diff + ', pos=' + pos);
   }
   tick(diff);
   setTimeout(timeout, tickTimeInMS);
@@ -123,24 +153,28 @@ function motorGetStatus() {
   return {
     speedRpm: Math.round(currentSpeedRpm),
     powerPct: Math.round(currentPowerPct*10)/10.0,
+    position: Math.round(pos/motorSensorRatio*10)/10.0,
   }
 }
 
 function motorTurnOnPid(targetSpeedRpm_) {
   pidEnabled = true;
-  pid_i = 0;
+  // pid_i = 0;
 
   targetSpeedRpm = targetSpeedRpm_;
   pid_lastError = currentSpeedRpm - targetSpeedRpm;
   // currentPowerPct = targetSpeedRpm/100;
   // setPorweInternal(currentPowerPct);
 }
+
 function motorTurnOffPid() {
   pidEnabled = false;
+  pid_i = 0;
   motorSetPower(0);
 }
 
 module.exports = {
+  loadStoredPosition: loadStoredPosition,
   motorSetPower: motorSetPower,
   motorGetPower: motorGetPower,
   motorGetPosition: motorGetPosition,

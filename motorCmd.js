@@ -19,7 +19,7 @@ function motorGetPower(pct) {
 
 function motorGetPos() {
   var url = urlBase + "position/get";
-  return httpGet(url).then(function (ret) {return ret.body;});
+  return httpGet(url).then(function (ret) {return parseFloat(ret.body);});
 }
 
 function motorGetCurrentSpeed() {
@@ -37,34 +37,24 @@ function motorPidSpeedOn(rpm) {
   return httpGet(url).then(function (ret) {return ret.body;});
 }
 
-function motorMoveTo(pos) {
-  var url = urlBase + "moveto/pos/" + pos;
+function motorMoveToPos(pos, speedRpm) {
+  var url = urlBase + "moveto/pos/" + pos + '/' + speedRpm;
   return httpGet(url).then(function (ret) {return ret.body;});
 }
 
-motorPidSpeedOn(4000).then(function (ret) { console.log(ret); });
-
-// motorGetCurrentSpeed()
-//   .then(function(powerPct) {console.log("speed="+powerPct);});
-
-// motorSetPower(0).then(console.log);
-// motorGetPower()
-//   .then(function(powerPct) {console.log("power="+powerPct);});
-// motorGetPos().then(console.log);
-// motorPidSpeedOn(100).then(console.log);
-// motorMoveTo(2000).then(console.log);
-
-function timeout() {
-  motorGetCurrentStatus()
-  .then(function(status) {console.log("status="+status);});
-  setTimeout(timeout, 300);
+function motorMoveToPosSe(pos, speedRpm) {
+  var url = urlBase + "moveToPosSe/pos/" + pos + '/' + speedRpm;
+  return httpGet(url).then(function (ret) {return ret.body;});
 }
-timeout();
 
-setTimeout(function(){
-  motorSetPower(0).then(function (ret) { 
-    console.log(ret); 
-    process.exit(0);
-  });
-  
-}, 4*1000);
+
+module.exports = {
+  motorSetPower: motorSetPower,
+  motorGetPower: motorGetPower,
+  motorGetPos: motorGetPos,
+  motorGetCurrentSpeed: motorGetCurrentSpeed,
+  motorGetCurrentStatus: motorGetCurrentStatus,
+  motorPidSpeedOn: motorPidSpeedOn,
+  motorMoveToPos: motorMoveToPos,
+  motorMoveToPosSe: motorMoveToPosSe,
+};
