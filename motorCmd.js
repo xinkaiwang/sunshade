@@ -7,7 +7,7 @@ var httpGet = promisify(request.get);
 
 var urlBase = 'http://localhost:8180/api/v1/';
 
-function motorSetPower(pct) {
+function motorSetPowerPct(pct) {
   var url = urlBase + "power/set/" + pct;
   return httpGet(url).then(function (ret) {return ret.body;});
 }
@@ -37,6 +37,11 @@ function motorPidSpeedOn(rpm) {
   return httpGet(url).then(function (ret) {return ret.body;});
 }
 
+function motorPidSpeedOff() {
+  var url = urlBase + "pid/speed/off";
+  return httpGet(url).then(function (ret) {return ret.body;});
+}
+
 function motorMoveToPos(pos, speedRpm) {
   var url = urlBase + "moveto/pos/" + pos + '/' + speedRpm;
   return httpGet(url).then(function (ret) {return ret.body;});
@@ -49,12 +54,13 @@ function motorMoveToPosSe(pos, speedRpm) {
 
 
 module.exports = {
-  motorSetPower: motorSetPower,
+  motorSetPowerPct: motorSetPowerPct,
   motorGetPower: motorGetPower,
   motorGetPos: motorGetPos,
   motorGetCurrentSpeed: motorGetCurrentSpeed,
   motorGetCurrentStatus: motorGetCurrentStatus,
   motorPidSpeedOn: motorPidSpeedOn,
+  motorPidSpeedOff: motorPidSpeedOff,
   motorMoveToPos: motorMoveToPos,
   motorMoveToPosSe: motorMoveToPosSe,
 };

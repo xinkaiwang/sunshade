@@ -9,6 +9,7 @@ var config = {
     motorPinB: 3,
     motorEnable: 4,
     motorSensorRatio: 1,
+    motorTargetSpeedRpm: 4000,
     qdPinA: 28,
     qdPinB: 29,
     upLed: 6,
