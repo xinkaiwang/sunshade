@@ -28,13 +28,19 @@ tail -f /var/log/motorService.log
 ## call motorService API
 ``` js
 node ./demoMotorService
+// or
+sudo forever-service  install --runAsUser root motorService --script ./motorService.js
+sudo service motorService status
+./demoMotorService.js
 ```
 
 # sunshadeService
 Sunshade service takes cares of buttons, LEDs, tempretures, heartbeats, etc.
-## demoButton
 ``` js
-node ./demoButtons.js
+node ./sunshadeService.js
+// or
+sudo forever-service  install sunshadeService --script ./sunshadeService.js
+sudo service sunshadeService status
 ```
 
 

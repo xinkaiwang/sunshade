@@ -91,7 +91,6 @@ function loadStoredLimitPos() {
     return currentPos;
   });
 }
-loadStoredLimitPos();
 
 function syncTopLimitToMysql(newTopLimit) {
   return promisify(mysqlStore.set)({topLimit: newTopLimit}).then(function() {
@@ -221,8 +220,45 @@ midButton.watch(function(err, buttonStatus) {
   }
 });
 
-function timeout() {
-  setTimeout(timeout, 1000);
+function syncCurrentPos() {
+  return promisify(mysqlStore.getAll)()
+  .then(function (data) {
+    if (currentPos != data.currentPos) {
+      currentPos = data.currentPos;
+      console.log('currentPos=' + currentPos);
+    }
+    return currentPos;
+  });
 }
 
-timeout();
+function timeout() {
+  return syncCurrentPos().finally(function() {
+    setTimeout(timeout, 1000);
+  });
+}
+
+// return true/false (shade_up=on=true, shade_down=off=false)
+function getOnOffState() {
+  var sum = parseFloat(bottomLimit) + parseFloat(topLimit);
+  var middle = (bottomLimit + topLimit) / 2;
+  var binaryState = currentPos > middle;
+  return binaryState;
+}
+
+var initFinished = loadStoredLimitPos()
+  .then(motorCmd.motorShake)
+  .then(timeout)
+  .then(function() {
+    console.log('sunshadeMgr::initFinished()');
+  });
+
+function waitForInitFinish() {
+  return initFinished.then(function() {return 'ok';});
+}
+
+module.exports = {
+  waitForInitFinish: waitForInitFinish,
+  fastUpward: fastUpward,
+  fastDownward: fastDownward,
+  getOnOffState: getOnOffState,
+}

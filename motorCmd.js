@@ -52,6 +52,11 @@ function motorMoveToPosSe(pos, speedRpm) {
   return httpGet(url).then(function (ret) {return ret.body;});
 }
 
+function motorShake() {
+  var url = urlBase + "shake";
+  return httpGet(url).then(function (ret) {return ret.body;});
+}
+
 
 module.exports = {
   motorSetPowerPct: motorSetPowerPct,
@@ -63,4 +68,5 @@ module.exports = {
   motorPidSpeedOff: motorPidSpeedOff,
   motorMoveToPos: motorMoveToPos,
   motorMoveToPosSe: motorMoveToPosSe,
+  motorShake: motorShake,
 };

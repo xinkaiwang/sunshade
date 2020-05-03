@@ -1,8 +1,16 @@
 'use strict'
 
 var wemore = require('wemore');
+var _ = require('underscore');
 
-var sunshade = wemore.Emulate({friendlyName: "SunShade"}); // automatically assigned port
+var localIpAddr = require('./localIpAddr');
+var lastPartOfIpAddr = _.last(localIpAddr.split('.'));
+
+console.log('lastPartOfIpAddr='+lastPartOfIpAddr);
+
+var sunshade = wemore.Emulate({
+  friendlyName: "SunShade" + lastPartOfIpAddr
+}); // automatically assigned port
 
 sunshade.on('listening', function() {
     // if you want it, you can get it:

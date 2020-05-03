@@ -3,6 +3,7 @@
 'use strict'
 
 var _ = require('underscore');
+var Promise = require('bluebird');
 var express = require('express');
 var app = express();
 
@@ -97,6 +98,20 @@ app.get('/api/v1/movewith/speed/:value', function (req, rsp) {
   // if (sunShadeCtr) {
   //     sunShadeCtr.fb();
   // }
+  rsp.send('ok');
+});
+
+app.get('/api/v1/shake', function (req, rsp) {
+  console.log('shake');
+  var pct = 40;
+  motorDev.motorSetPower(pct);
+  Promise.delay(100).then(function() {
+    motorDev.motorSetPower(0);
+  }).delay(200).then(function() {
+    motorDev.motorSetPower(-pct);
+  }).delay(100).then(function() {
+    motorDev.motorSetPower(0);
+  });
   rsp.send('ok');
 });
 

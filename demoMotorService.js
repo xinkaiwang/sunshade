@@ -46,22 +46,26 @@ var motor = require('./motorCmd');
 
 
 // test case move forward/move back to pos
-var originPos = 0;
-var targetPos = 0;
-motor.motorGetPos().then(function(pos) {
-  originPos = pos;
-  targetPos = pos + 200;
-  console.log('currentPos='+pos +', targetPos=' + targetPos);
-  motor.motorMoveToPosSe(targetPos, 2000);
-  return Promise.delay(15*1000);
-}).then(function() {
-  motor.motorMoveToPosSe(originPos, -6000);
-  return Promise.delay(6*1000);
-}).then(process.exit);
+// var originPos = 0;
+// var targetPos = 0;
+// motor.motorGetPos().then(function(pos) {
+//   originPos = pos;
+//   targetPos = pos + 200;
+//   console.log('currentPos='+pos +', targetPos=' + targetPos);
+//   motor.motorMoveToPosSe(targetPos, 2000);
+//   return Promise.delay(15*1000);
+// }).then(function() {
+//   motor.motorMoveToPosSe(originPos, -6000);
+//   return Promise.delay(6*1000);
+// }).then(process.exit);
 
-function timeout() {
-  motor.motorGetCurrentStatus()
-  .then(function(status) {console.log("status="+status);});
-  setTimeout(timeout, 300);
-}
-timeout();
+// function timeout() {
+//   motor.motorGetCurrentStatus()
+//   .then(function(status) {console.log("status="+status);});
+//   setTimeout(timeout, 300);
+// }
+// timeout();
+
+
+// test case shake
+motor.motorShake();

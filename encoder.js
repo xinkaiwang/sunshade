@@ -6,7 +6,7 @@ var valueTypes = {
     testAttr: 'int',
     currentPos: 'int',
     topLimit: 'int',
-    buttomLimit: 'int',
+    bottomLimit: 'int',
     profileId: 'int',
 }
 
